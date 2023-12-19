@@ -4,7 +4,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Category } from './schemas/category.schema';
 import { Model } from 'mongoose';
-
+import { Request } from 'express';
 @Injectable()
 export class CategoriesService {
   constructor(
@@ -16,8 +16,11 @@ export class CategoriesService {
     return createdCategory.save();
   }
 
-  async findAll(): Promise<Category[] | null> {
-    return await this.categoryModel.find().exec();
+  async findAll(request: Request): Promise<Category[] | null> {
+    return await this.categoryModel
+      .find(request.query)
+      .setOptions({ sanitizeFilter: true })
+      .exec();
   }
 
   async findOne(id: string): Promise<Category | null> {

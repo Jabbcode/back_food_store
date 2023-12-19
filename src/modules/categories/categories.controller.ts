@@ -6,12 +6,16 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
 
 @Controller('categories')
+@ApiTags('Categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
@@ -21,8 +25,8 @@ export class CategoriesController {
   }
 
   @Get()
-  async findAll() {
-    return this.categoriesService.findAll();
+  async findAll(@Req() request: Request) {
+    return this.categoriesService.findAll(request);
   }
 
   @Get(':id')
