@@ -10,7 +10,7 @@ import {
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
-import { Store } from './entities/store.entity';
+import { Store } from './schemas/stores.schema';
 
 @Controller('stores')
 export class StoresController {
