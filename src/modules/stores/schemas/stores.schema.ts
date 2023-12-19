@@ -7,7 +7,7 @@ export type StoreDocument = HydratedDocument<Store>;
 @Schema()
 export class Store {
   @Prop({ required: true })
-  fechaModificacion: Date;
+  fechaModificacion: string;
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }] })
   products: Product[];

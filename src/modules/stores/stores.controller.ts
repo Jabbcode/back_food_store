@@ -6,13 +6,17 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { Store } from './schemas/stores.schema';
+import { ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
 
 @Controller('stores')
+@ApiTags('Store')
 export class StoresController {
   constructor(private readonly storesService: StoresService) {}
 
@@ -22,8 +26,8 @@ export class StoresController {
   }
 
   @Get()
-  async findAll() {
-    return this.storesService.findAll();
+  async findAll(@Req() request: Request) {
+    return this.storesService.findAll(request);
   }
 
   @Get(':id')
