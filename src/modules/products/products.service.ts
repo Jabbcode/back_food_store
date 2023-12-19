@@ -4,7 +4,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './schemas/product.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-
+import { Request } from 'express';
 @Injectable()
 export class ProductsService {
   constructor(
@@ -16,8 +16,11 @@ export class ProductsService {
     return createdProduct.save();
   }
 
-  async findAll(): Promise<Product[] | null> {
-    return await this.productModel.find().exec();
+  async findAll(request: Request): Promise<Product[] | null> {
+    return await this.productModel
+      .find(request.query)
+      .setOptions({ sanitizeFilter: true })
+      .exec();
   }
 
   async findOne(id: string): Promise<Product | null> {
