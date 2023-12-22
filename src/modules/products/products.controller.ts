@@ -14,6 +14,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './schemas/product.schema';
 import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
+import { ParseObjectIdPipe } from 'src/utilities/parse-object-id-pipe.pipe';
 
 @Controller('products')
 @ApiTags('Products')
@@ -31,20 +32,38 @@ export class ProductsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Product | null> {
+  async findOne(
+    @Param('id', ParseObjectIdPipe) id: string,
+  ): Promise<Product | null> {
     return this.productsService.findOne(id);
   }
 
   @Patch(':id')
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseObjectIdPipe) id: string,
     @Body() updateProductDto: UpdateProductDto,
   ): Promise<Product> {
     return await this.productsService.update(id, updateProductDto);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<void> {
+  async remove(@Param('id', ParseObjectIdPipe) id: string): Promise<void> {
     await this.productsService.remove(id);
+  }
+
+  @Post(':productId/categories/assign')
+  async assignCategoryToProduct(
+    @Param('productId') productId: string,
+    @Body() categoryIds: string[],
+  ) {
+    try {
+      const updateProduct = await this.productsService.assignCategoryToProduct(
+        productId,
+        categoryIds,
+      );
+      return { success: true, data: updateProduct };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }
 }

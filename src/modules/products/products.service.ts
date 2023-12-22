@@ -5,10 +5,12 @@ import { Product } from './schemas/product.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Request } from 'express';
+import { CategoriesService } from '../categories/categories.service';
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectModel(Product.name) private productModel: Model<Product>,
+    private readonly categoriesService: CategoriesService,
   ) {}
 
   async create(createProductDto: CreateProductDto) {
@@ -19,12 +21,13 @@ export class ProductsService {
   async findAll(request: Request): Promise<Product[] | null> {
     return await this.productModel
       .find(request.query)
+      .populate('categories')
       .setOptions({ sanitizeFilter: true })
       .exec();
   }
 
   async findOne(id: string): Promise<Product | null> {
-    return await this.productModel.findById(id).exec();
+    return await this.productModel.findById(id).populate('categories').exec();
   }
 
   async update(
@@ -38,5 +41,52 @@ export class ProductsService {
 
   async remove(id: string): Promise<void> {
     await this.productModel.findByIdAndDelete(id).exec();
+  }
+  async assignCategoryToProduct(productId: string, categoryIds: string[]) {
+    try {
+      const product = await this.productModel.findById(productId).exec();
+
+      if (!product) {
+        throw new Error('No se encontró el producto con el ID proporcionado');
+      }
+
+      const existingCategoryIds = product.categories.map((category) =>
+        category._id.toString(),
+      );
+
+      const newCategoryIds = categoryIds?.filter(
+        (categoryId) => !existingCategoryIds.includes(categoryId),
+      );
+
+      if (newCategoryIds.length === 0) {
+        console.log('Todas las categorias ya están asignados al producto.');
+        return product;
+      }
+
+      const newCategories = await Promise.all(
+        newCategoryIds.map((categoryId) =>
+          this.categoriesService.findOne(categoryId),
+        ),
+      );
+
+      product.categories = product.categories.concat(newCategories);
+
+      await product.save();
+
+      // Volver a obtener el producto con las categorias populadas
+      const updatedProduct = await this.productModel
+        .findById(productId)
+        .populate('categories')
+        .exec();
+
+      if (!updatedProduct) {
+        throw new Error('Error al obtener el producto actualizado');
+      }
+
+      return updatedProduct;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Error al asignar categorias al producto');
+    }
   }
 }
