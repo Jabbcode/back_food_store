@@ -66,4 +66,21 @@ export class ProductsController {
       return { success: false, error: error.message };
     }
   }
+
+  @Post(':productId/categories/unassign')
+  async unassignCategoriesToProduct(
+    @Param('productId') productId: string,
+    @Body() categoryIds: string[],
+  ) {
+    try {
+      const updatedProduct =
+        await this.productsService.unassignCategoriesToProduct(
+          productId,
+          categoryIds,
+        );
+      return { success: true, data: updatedProduct };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
 }

@@ -1,4 +1,12 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateStoreDto } from './create-store.dto';
+import { IsArray, IsOptional, IsString } from 'class-validator';
+import { Product } from 'src/modules/products/schemas/product.schema';
 
-export class UpdateStoreDto extends PartialType(CreateStoreDto) {}
+export class UpdateStoreDto {
+  @IsString()
+  @IsOptional()
+  fechaModificacion: string;
+
+  @IsArray()
+  @IsOptional()
+  products: Product[];
+}

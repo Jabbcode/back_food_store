@@ -19,12 +19,13 @@ export class CategoriesService {
   async findAll(request: Request): Promise<Category[] | null> {
     return await this.categoryModel
       .find(request.query)
+      .select('nombre')
       .setOptions({ sanitizeFilter: true })
       .exec();
   }
 
   async findOne(id: string): Promise<Category | null> {
-    return await this.categoryModel.findById(id).exec();
+    return await this.categoryModel.findById(id).select('nombre').exec();
   }
 
   async update(

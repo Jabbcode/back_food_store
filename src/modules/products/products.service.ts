@@ -89,4 +89,51 @@ export class ProductsService {
       throw new Error('Error al asignar categorias al producto');
     }
   }
+
+  async unassignCategoriesToProduct(productId: string, categoryIds: string[]) {
+    try {
+      const product = await this.productModel.findById(productId).exec();
+
+      if (!product) {
+        throw new Error('No se encontró el producto con el ID proporcionado');
+      }
+
+      const existingCategoryIds = product.categories.map((category) =>
+        category._id.toString(),
+      );
+
+      // Filtrar los IDs de productos que están ya asignados al almacén
+      const newCategoryIds = categoryIds?.filter((categoryId) =>
+        existingCategoryIds.includes(categoryId),
+      );
+
+      if (!newCategoryIds || newCategoryIds.length === 0) {
+        console.log('Ninguno de las categorias está asignada al producto.');
+        return product;
+      }
+
+      // Eliminar las categorias del producto por sus IDs
+      product.categories = product.categories.filter(
+        (category) => !newCategoryIds.includes(category._id.toString()),
+      );
+
+      // Guardar el producto actualizado
+      await product.save();
+
+      // Volver a obtener el producto con las categorias populados
+      const updatedProduct = await this.productModel
+        .findById(productId)
+        .populate('categories')
+        .exec();
+
+      if (!updatedProduct) {
+        throw new Error('Error al obtener el producto actualizado');
+      }
+
+      return updatedProduct;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Error al desasignar categorias al producto');
+    }
+  }
 }

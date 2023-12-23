@@ -24,7 +24,7 @@ export class StoresService {
       .find(request.query)
       .populate({
         path: 'products',
-        populate: { path: 'categories' },
+        populate: { path: 'categories', select: ['nombre'] },
       })
       .setOptions({ sanitizeFilter: true })
       .exec();
@@ -35,7 +35,7 @@ export class StoresService {
       .findById(id)
       .populate({
         path: 'products',
-        populate: { path: 'categories' },
+        populate: { path: 'categories', select: ['nombre'] },
       })
       .exec();
   }
@@ -91,7 +91,10 @@ export class StoresService {
       // Volver a obtener el almacén con los productos populados
       const updatedStore = await this.storeModel
         .findById(storeId)
-        .populate('products')
+        .populate({
+          path: 'products',
+          populate: { path: 'categories', select: ['nombre'] },
+        })
         .exec();
 
       if (!updatedStore) {
@@ -102,6 +105,56 @@ export class StoresService {
     } catch (error) {
       console.error(error);
       throw new Error('Error al asignar productos al almacén');
+    }
+  }
+
+  async unassignProductsToStore(storeId: string, productIds: string[]) {
+    try {
+      const store = await this.storeModel.findById(storeId).exec();
+
+      if (!store) {
+        throw new Error('No se encontró el almacén con el ID proporcionado');
+      }
+
+      const existingProductIds = store.products.map((product) =>
+        product._id.toString(),
+      );
+
+      // Filtrar los IDs de productos que están ya asignados al almacén
+      const newProductIds = productIds?.filter((productId) =>
+        existingProductIds.includes(productId),
+      );
+
+      if (!newProductIds || newProductIds.length === 0) {
+        console.log('Ninguno de los productos está asignado al almacén.');
+        return store;
+      }
+
+      // Eliminar los productos del almacén por sus IDs
+      store.products = store.products.filter(
+        (product) => !newProductIds.includes(product._id.toString()),
+      );
+
+      // Guardar el almacén actualizado
+      await store.save();
+
+      // Volver a obtener el almacén con los productos populados
+      const updatedStore = await this.storeModel
+        .findById(storeId)
+        .populate({
+          path: 'products',
+          populate: { path: 'categories', select: ['nombre'] },
+        })
+        .exec();
+
+      if (!updatedStore) {
+        throw new Error('Error al obtener el almacén actualizado');
+      }
+
+      return updatedStore;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Error al desasignar productos del almacén');
     }
   }
 }

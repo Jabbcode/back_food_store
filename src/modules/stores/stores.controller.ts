@@ -66,4 +66,20 @@ export class StoresController {
       return { success: false, error: error.message };
     }
   }
+
+  @Post(':storeId/products/unassign')
+  async unassignProductsToStore(
+    @Param('storeId') storeId: string,
+    @Body() productIds: string[],
+  ) {
+    try {
+      const updatedStore = await this.storesService.unassignProductsToStore(
+        storeId,
+        productIds,
+      );
+      return { success: true, data: updatedStore };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
 }
