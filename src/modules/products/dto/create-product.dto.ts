@@ -37,4 +37,13 @@ export class CreateProductDto {
   })
   @IsArray()
   readonly categories: string[];
+
+  @ApiProperty({
+    example: 'id',
+    description: 'ID de unidades',
+    required: true,
+    format: 'string',
+  })
+  @IsString()
+  readonly unit: string;
 }

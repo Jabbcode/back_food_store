@@ -21,7 +21,7 @@ export class ProductsService {
   async findAll(request: Request): Promise<Product[] | null> {
     return await this.productModel
       .find(request.query)
-      .populate('categories')
+      .populate(['categories', 'unit'])
       .setOptions({ sanitizeFilter: true })
       .exec();
   }
@@ -42,6 +42,7 @@ export class ProductsService {
   async remove(id: string): Promise<void> {
     await this.productModel.findByIdAndDelete(id).exec();
   }
+
   async assignCategoryToProduct(productId: string, categoryIds: string[]) {
     try {
       const product = await this.productModel.findById(productId).exec();
@@ -76,7 +77,7 @@ export class ProductsService {
       // Volver a obtener el producto con las categorias populadas
       const updatedProduct = await this.productModel
         .findById(productId)
-        .populate('categories')
+        .populate(['categories', 'unit'])
         .exec();
 
       if (!updatedProduct) {
@@ -123,7 +124,7 @@ export class ProductsService {
       // Volver a obtener el producto con las categorias populados
       const updatedProduct = await this.productModel
         .findById(productId)
-        .populate('categories')
+        .populate(['categories', 'unit'])
         .exec();
 
       if (!updatedProduct) {
