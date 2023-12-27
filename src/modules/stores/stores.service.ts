@@ -24,7 +24,10 @@ export class StoresService {
       .find(request.query)
       .populate({
         path: 'products',
-        populate: { path: 'categories', select: ['nombre'] },
+        populate: [
+          { path: 'categories', select: ['nombre'] },
+          { path: 'unit' },
+        ],
       })
       .setOptions({ sanitizeFilter: true })
       .exec();
